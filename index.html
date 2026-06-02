@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Aethel · AI Tutor Coding</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="logo">
+                <span class="icon">✦</span>
+                <h1>Aethel</h1>
+            </div>
+            <p class="tagline">belajar coding · tanya apa saja</p>
+        </header>
 
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message assistant">
+                    <div class="avatar">A</div>
+                    <div class="content">Halo! 👋 Aku Aethel. Tanya soal HTML, CSS, JavaScript, React, atau debugging yuk.</div>
+                </div>
+            </div>
+            <div class="typing" id="typing">Aethel sedang mengetik...</div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="Tulis pertanyaan codingmu..." rows="1"></textarea>
+            <button id="sendBtn">Kirim</button>
+        </div>
+
+        <div class="examples">
+            <button class="example-chip">Apa itu closure?</button>
+            <button class="example-chip">Buat flexbox navbar</button>
+            <button class="example-chip">Perbedaan var vs let</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
