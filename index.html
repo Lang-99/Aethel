@@ -2,142 +2,126 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Aethel · AI Tutor Cerdas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Aethel · AI Assistant</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0a0a0a">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <!-- Google Sign In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="dark-mode">
+<body>
     <div class="app">
-        <!-- Header dengan liquid glass -->
-        <header class="liquid-glass">
+        <!-- Header simple seperti DeepSeek -->
+        <header>
             <div class="logo">
                 <span class="icon">✦</span>
                 <h1>Aethel</h1>
             </div>
-            <button id="settingsBtn" class="icon-btn">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-            </button>
+            <div class="header-right">
+                <button id="searchModeBtn" class="header-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <span class="search-indicator" id="searchIndicator">Off</span>
+                </button>
+                <button id="settingsBtn" class="header-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+                <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleGoogleSignIn"></div>
+                <div class="g_id_signin" data-type="icon" data-size="small" data-theme="outline" data-text="signin_with" data-shape="circle"></div>
+            </div>
         </header>
 
-        <!-- Chat container -->
+        <!-- Chat container - user kanan, AI kiri -->
         <div class="chat-container" id="chatContainer">
             <div class="messages" id="messages">
-                <div class="message assistant">
-                    <div class="avatar">A</div>
-                    <div class="content">✦ Halo! Aku Aethel, AI tutor canggihmu. Ada yang ingin kamu pelajari tentang coding hari ini?</div>
-                </div>
+                <!-- Pesan awal dari AI (opsional, tapi lebih baik kosong) -->
             </div>
             <div class="typing" id="typing">Aethel sedang mengetik...</div>
         </div>
 
-        <!-- Input area -->
-        <div class="input-area liquid-glass">
-            <textarea id="userInput" placeholder="Ketik pertanyaan codingmu..." rows="1"></textarea>
-            <button id="sendBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="22" y1="2" x2="11" y2="13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                </svg>
-            </button>
+        <!-- Input area dengan attachment -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <button id="attachBtn" class="attach-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h6l-2 8 10-12h-6l2-8z"/>
+                    </svg>
+                </button>
+                <input type="file" id="fileInput" accept="image/*,.txt,.pdf,.js,.py,.html,.css" style="display: none" multiple>
+                <textarea id="userInput" placeholder="Ketik pesan..." rows="1"></textarea>
+                <button id="sendBtn" class="send-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="file-preview" id="filePreview"></div>
         </div>
     </div>
 
-    <!-- MODAL SETTINGS -->
+    <!-- MODAL SETTINGS (sederhana seperti DeepSeek) -->
     <div id="settingsModal" class="modal">
-        <div class="modal-content liquid-glass">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>Pengaturan Aethel</h2>
+                <h2>Pengaturan</h2>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Mode pencarian -->
                 <div class="setting-item">
-                    <label>🔍 Mode Pencarian</label>
+                    <label>Tema</label>
+                    <div class="theme-buttons">
+                        <button class="theme-btn active" data-theme="dark">Gelap</button>
+                        <button class="theme-btn" data-theme="light">Terang</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Mode Pencarian</label>
                     <div class="toggle-switch">
                         <input type="checkbox" id="searchModeToggle">
                         <span class="slider"></span>
                     </div>
                     <p class="setting-desc">Aktifkan akses internet untuk informasi real-time</p>
                 </div>
-
-                <!-- Tema -->
                 <div class="setting-item">
-                    <label>🎨 Tema</label>
-                    <div class="theme-buttons">
-                        <button class="theme-btn active" data-theme="dark">🌙 Hitam</button>
-                        <button class="theme-btn" data-theme="light">☀️ Putih</button>
-                    </div>
-                </div>
-
-                <!-- Bahasa -->
-                <div class="setting-item">
-                    <label>🌐 Bahasa</label>
+                    <label>Bahasa</label>
                     <select id="languageSelect">
-                        <option value="id">Bahasa Indonesia</option>
+                        <option value="id">Indonesia</option>
                         <option value="en">English</option>
-                        <option value="ar">العربية</option>
-                        <option value="zh">中文</option>
                         <option value="es">Español</option>
                         <option value="fr">Français</option>
+                        <option value="ar">العربية</option>
+                        <option value="zh">中文</option>
                         <option value="hi">हिन्दी</option>
                         <option value="pt">Português</option>
                         <option value="ru">Русский</option>
                         <option value="ja">日本語</option>
                         <option value="ko">한국어</option>
-                        <option value="de">Deutsch</option>
-                        <option value="it">Italiano</option>
-                        <option value="tr">Türkçe</option>
-                        <option value="vi">Tiếng Việt</option>
-                        <option value="th">ไทย</option>
-                        <option value="pl">Polski</option>
-                        <option value="nl">Nederlands</option>
-                        <option value="sv">Svenska</option>
-                        <option value="no">Norsk</option>
                     </select>
                 </div>
-
-                <!-- Perjanjian Layanan -->
-                <div class="setting-item">
-                    <button id="termsBtn" class="setting-btn">📜 Perjanjian Layanan</button>
-                </div>
-
-                <!-- Tentang pembuat -->
                 <div class="setting-item">
                     <div class="creator-info">
-                        <p>✨ <strong>Aethel v3.0</strong></p>
+                        <p>Aethel v4.0</p>
                         <p>Dibuat oleh <strong>Langitjp</strong></p>
-                        <p class="creator-desc">AI Tutor Canggih dengan 20 bahasa</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL TERMS -->
-    <div id="termsModal" class="modal">
-        <div class="modal-content liquid-glass">
+    <!-- PREVIEW MODAL untuk HTML -->
+    <div id="previewModal" class="modal preview-modal">
+        <div class="modal-content preview-content">
             <div class="modal-header">
-                <h2>Perjanjian Layanan Aethel</h2>
-                <button class="close-terms">&times;</button>
+                <h2>Preview HTML</h2>
+                <button class="close-preview">&times;</button>
             </div>
-            <div class="modal-body terms-body">
-                <p><strong>Versi 3.0 – Berlaku mulai sekarang</strong></p>
-                <p>1. Aethel adalah asisten AI untuk pembelajaran coding dan pemrograman.</p>
-                <p>2. Semua percakapan bersifat rahasia dan tidak disimpan di server.</p>
-                <p>3. Jangan menyalahgunakan AI untuk hal ilegal atau merugikan orang lain.</p>
-                <p>4. Kode yang dihasilkan dapat digunakan bebas untuk belajar dan project pribadi.</p>
-                <p>5. Layanan ini gratis tanpa biaya tersembunyi.</p>
-                <p>6. Pembuat (Langitjp) tidak bertanggung jawab atas penyalahgunaan AI.</p>
-                <p>7. Dengan menggunakan Aethel, Anda menyetujui perjanjian ini.</p>
-                <br>
-                <p>© 2025 Aethel by Langitjp</p>
-            </div>
+            <div class="preview-frame" id="previewFrame"></div>
         </div>
     </div>
 
