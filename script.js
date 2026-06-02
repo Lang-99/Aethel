@@ -1,51 +1,36 @@
-// Aethel v4.0 - Full AI Assistant
+// Aethel v1.0 - Black & White
 
-// State
 let searchMode = localStorage.getItem('aethel_search_mode') === 'true';
-let currentTheme = localStorage.getItem('aethel_theme') || 'dark';
 let currentLanguage = localStorage.getItem('aethel_language') || 'id';
 let conversationHistory = [];
-let currentUser = null;
 
-// DOM Elements
 const messageContainer = document.getElementById('messages');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
-const typingIndicator = document.getElementById('typing');
-const settingsBtn = document.getElementById('settingsBtn');
+const typingIndicator = document.getElementById('typingIndicator');
 const settingsModal = document.getElementById('settingsModal');
+const previewModal = document.getElementById('previewModal');
+const previewFrame = document.getElementById('previewFrame');
 const searchModeBtn = document.getElementById('searchModeBtn');
-const searchIndicator = document.getElementById('searchIndicator');
+const searchModeText = document.getElementById('searchModeText');
 const searchModeToggle = document.getElementById('searchModeToggle');
 const languageSelect = document.getElementById('languageSelect');
 const attachBtn = document.getElementById('attachBtn');
 const fileInput = document.getElementById('fileInput');
 const filePreview = document.getElementById('filePreview');
-const previewModal = document.getElementById('previewModal');
-const previewFrame = document.getElementById('previewFrame');
+const newChatBtn = document.getElementById('newChatBtn');
 
-// Translations
 const translations = {
-    id: { typing: "Aethel sedang mengetik...", error: "Maaf, terjadi kesalahan. Coba lagi." },
-    en: { typing: "Aethel is typing...", error: "Sorry, something went wrong. Try again." },
-    es: { typing: "Aethel está escribiendo...", error: "Lo siento, algo salió mal. Inténtalo de nuevo." },
-    fr: { typing: "Aethel écrit...", error: "Désolé, une erreur s'est produite. Réessayez." },
-    ar: { typing: "إيثيل يكتب...", error: "عذرًا، حدث خطأ. حاول مرة أخرى." },
-    zh: { typing: "Aethel正在输入...", error: "抱歉，出错了。请重试。" },
-    hi: { typing: "एथेल टाइप कर रहा है...", error: "क्षमा करें, कुछ गलत हो गया। फिर से कोशिश करें।" }
+    id: { typing: "Aethel mengetik...", error: "Maaf, terjadi kesalahan.", searchOn: "Mode Pencarian On", searchOff: "Mode Pencarian Off" },
+    en: { typing: "Aethel is typing...", error: "Sorry, something went wrong.", searchOn: "Search Mode On", searchOff: "Search Mode Off" }
 };
 
-// Initialize
 function init() {
-    // Apply settings
-    applyTheme(currentTheme);
     updateSearchModeUI();
     
-    // Set language select
-    if (languageSelect) languageSelect.value = currentLanguage;
     if (searchModeToggle) searchModeToggle.checked = searchMode;
+    if (languageSelect) languageSelect.value = currentLanguage;
     
-    // Event listeners
     sendBtn.addEventListener('click', sendMessage);
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -54,8 +39,9 @@ function init() {
         }
     });
     
-    settingsBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
-    document.querySelector('.close-modal')?.addEventListener('click', () => settingsModal.style.display = 'none');
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', () => settingsModal.style.display = 'none');
+    });
     document.querySelector('.close-preview')?.addEventListener('click', () => previewModal.style.display = 'none');
     
     searchModeBtn.addEventListener('click', toggleSearchMode);
@@ -71,47 +57,27 @@ function init() {
         languageSelect.addEventListener('change', (e) => {
             currentLanguage = e.target.value;
             localStorage.setItem('aethel_language', currentLanguage);
-            typingIndicator.textContent = translations[currentLanguage]?.typing || translations.id.typing;
+            updateSearchModeUI();
         });
     }
     
-    // Theme buttons
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const theme = btn.dataset.theme;
-            applyTheme(theme);
-            localStorage.setItem('aethel_theme', theme);
-            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
-    
-    // File attachment
     attachBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', handleFileSelect);
+    newChatBtn.addEventListener('click', newChat);
     
-    // Auto resize textarea
+    document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.style.display = 'flex');
+    document.getElementById('settingsHeaderBtn')?.addEventListener('click', () => settingsModal.style.display = 'flex');
+    
+    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+    
     userInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
     
-    // Close modal on outside click
-    window.addEventListener('click', (e) => {
-        if (e.target === settingsModal) settingsModal.style.display = 'none';
-        if (e.target === previewModal) previewModal.style.display = 'none';
-    });
-}
-
-function applyTheme(theme) {
-    currentTheme = theme;
-    if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        document.body.classList.remove('dark-mode');
-    } else {
-        document.body.classList.add('dark-mode');
-        document.body.classList.remove('light-mode');
-    }
+    loadChatHistory();
 }
 
 function toggleSearchMode() {
@@ -123,16 +89,26 @@ function toggleSearchMode() {
 }
 
 function updateSearchModeUI() {
-    if (searchIndicator) {
-        searchIndicator.textContent = searchMode ? 'On' : 'Off';
-        searchIndicator.className = `search-indicator ${searchMode ? 'on' : 'off'}`;
+    const t = translations[currentLanguage] || translations.id;
+    if (searchModeText) {
+        searchModeText.textContent = searchMode ? t.searchOn : t.searchOff;
+    }
+    if (searchModeBtn) {
+        if (searchMode) {
+            searchModeBtn.classList.add('active');
+        } else {
+            searchModeBtn.classList.remove('active');
+        }
     }
 }
 
 function addSystemMessage(text) {
     const msgDiv = document.createElement('div');
     msgDiv.className = 'message assistant';
-    msgDiv.innerHTML = `<div class="message-content" style="background: none; font-style: italic; font-size: 12px;">${escapeHtml(text)}</div>`;
+    msgDiv.innerHTML = `
+        <div class="avatar"><i class="fas fa-info-circle"></i></div>
+        <div class="message-content" style="background: none; font-style: italic; font-size: 12px;">${escapeHtml(text)}</div>
+    `;
     messageContainer.appendChild(msgDiv);
     scrollToBottom();
 }
@@ -147,18 +123,26 @@ function handleFileSelect(e) {
         if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
+            img.style.width = '24px';
+            img.style.height = '24px';
+            img.style.borderRadius = '4px';
             previewItem.appendChild(img);
+        } else {
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-file';
+            previewItem.appendChild(icon);
         }
         
         const span = document.createElement('span');
-        span.textContent = file.name;
+        span.textContent = file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name;
         previewItem.appendChild(span);
         
         const removeBtn = document.createElement('button');
-        removeBtn.textContent = '×';
+        removeBtn.innerHTML = '&times;';
         removeBtn.style.background = 'none';
         removeBtn.style.border = 'none';
         removeBtn.style.cursor = 'pointer';
+        removeBtn.style.marginLeft = '4px';
         removeBtn.onclick = () => previewItem.remove();
         previewItem.appendChild(removeBtn);
         
@@ -170,25 +154,29 @@ function addMessage(content, role, files = []) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${role}`;
     
-    let htmlContent = `<div class="message-content">`;
+    let htmlContent = '';
     
-    // Add files/images
+    if (role === 'assistant') {
+        htmlContent = `<div class="avatar"><i class="fas fa-robot"></i></div>`;
+    }
+    
+    htmlContent += `<div class="message-content">`;
+    
     if (files.length > 0) {
         files.forEach(file => {
             if (file.type?.startsWith('image/')) {
                 htmlContent += `<img src="${URL.createObjectURL(file)}" class="message-image">`;
             } else {
-                htmlContent += `<div class="file-attachment">📎 ${escapeHtml(file.name)}</div>`;
+                htmlContent += `<div class="file-attachment"><i class="fas fa-paperclip"></i> ${escapeHtml(file.name)}</div>`;
             }
         });
     }
     
-    // Process content for code blocks with preview
     let processedContent = escapeHtml(content);
     const codeRegex = /```(\w*)\n([\s\S]*?)```/g;
     processedContent = processedContent.replace(codeRegex, (match, lang, code) => {
         const isHtml = lang === 'html' || lang === 'HTML';
-        return `<div class="code-block"><pre><code>${escapeHtml(code)}</code></pre>${isHtml ? `<button class="preview-btn" onclick="previewHTML(\`${escapeHtml(code).replace(/`/g, '\\`')}\`)">🔍 Preview HTML</button>` : ''}</div>`;
+        return `<div class="code-block"><code>${escapeHtml(code)}</code>${isHtml ? `<button class="preview-btn" onclick="previewHTML(\`${escapeHtml(code).replace(/`/g, '\\`')}\`)">🔍 Preview HTML</button>` : ''}</div>`;
     });
     
     htmlContent += processedContent;
@@ -211,7 +199,7 @@ function escapeHtml(text) {
 }
 
 function scrollToBottom() {
-    const container = document.querySelector('.chat-container');
+    const container = document.querySelector('.messages-container');
     container.scrollTop = container.scrollHeight;
 }
 
@@ -221,34 +209,23 @@ async function sendMessage() {
     
     if (!text && files.length === 0) return;
     
-    // Add user message
-    addMessage(text || '📎 Mengirim file', 'user', files);
+    addMessage(text || 'Mengirim file...', 'user', files);
     
-    // Clear input
     userInput.value = '';
     userInput.style.height = 'auto';
     filePreview.innerHTML = '';
     fileInput.value = '';
     
-    // Prepare files data
     let filesData = [];
     for (const file of files) {
         const base64 = await fileToBase64(file);
-        filesData.push({
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            data: base64
-        });
+        filesData.push({ name: file.name, type: file.type, data: base64 });
     }
     
-    conversationHistory.push({ 
-        role: 'user', 
-        content: text,
-        files: filesData 
-    });
+    conversationHistory.push({ role: 'user', content: text, files: filesData });
+    saveChatToHistory(text);
     
-    typingIndicator.style.display = 'block';
+    typingIndicator.style.display = 'flex';
     scrollToBottom();
     
     try {
@@ -256,7 +233,7 @@ async function sendMessage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                messages: conversationHistory,
+                messages: conversationHistory.slice(-15),
                 language: currentLanguage,
                 searchMode: searchMode
             })
@@ -265,14 +242,12 @@ async function sendMessage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
-        const aiReply = data.reply;
-        addMessage(aiReply, 'assistant');
-        conversationHistory.push({ role: 'assistant', content: aiReply });
+        addMessage(data.reply, 'assistant');
+        conversationHistory.push({ role: 'assistant', content: data.reply });
         
-        if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-30);
     } catch (err) {
-        const errorMsg = translations[currentLanguage]?.error || translations.id.error;
-        addMessage(errorMsg, 'assistant');
+        const t = translations[currentLanguage] || translations.id;
+        addMessage(t.error, 'assistant');
     } finally {
         typingIndicator.style.display = 'none';
         scrollToBottom();
@@ -280,19 +255,36 @@ async function sendMessage() {
 }
 
 function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
     });
 }
 
-// Google Sign In callback
-window.handleGoogleSignIn = function(response) {
-    currentUser = response;
-    addSystemMessage(`✅ Login sebagai ${response.email || 'user'} via Google`);
-};
+function newChat() {
+    conversationHistory = [];
+    messageContainer.innerHTML = '';
+    addSystemMessage('✨ Chat baru dimulai. Tanya apa saja!');
+}
 
-// Start
+function saveChatToHistory(firstMessage) {
+    let history = JSON.parse(localStorage.getItem('aethel_chats') || '[]');
+    history.unshift({ id: Date.now(), title: firstMessage.slice(0, 30) });
+    if (history.length > 15) history = history.slice(0, 15);
+    localStorage.setItem('aethel_chats', JSON.stringify(history));
+    loadChatHistory();
+}
+
+function loadChatHistory() {
+    const historyList = document.getElementById('historyList');
+    if (!historyList) return;
+    let history = JSON.parse(localStorage.getItem('aethel_chats') || '[]');
+    historyList.innerHTML = history.map(chat => `
+        <div class="history-item" onclick="location.reload()">
+            <i class="fas fa-comment"></i> ${escapeHtml(chat.title)}...
+        </div>
+    `).join('');
+}
+
 init();
