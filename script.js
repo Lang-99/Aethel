@@ -1,12 +1,12 @@
-// Aethel v2.0 - Full Working dengan Secret Command
+// Aethel v3.0 - Full Version
 
-console.log('🚀 Aethel script loaded');
+console.log('Aethel v3.0 loaded');
 
 let searchMode = localStorage.getItem('aethel_search_mode') === 'true';
 let currentLanguage = localStorage.getItem('aethel_language') || 'id';
 let conversationHistory = [];
+let currentChatId = localStorage.getItem('aethel_current_chat') || 'chat_' + Date.now();
 
-// 20 LANGUAGES TRANSLATIONS
 const translations = {
     id: { typing: "Aethel mengetik...", error: "Maaf, terjadi kesalahan.", searchOn: "Mode Pencarian On", searchOff: "Mode Pencarian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
     en: { typing: "Aethel is typing...", error: "Sorry, something went wrong.", searchOn: "Search Mode On", searchOff: "Search Mode Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
@@ -30,280 +30,159 @@ const translations = {
     ms: { typing: "Aethel sedang menaip...", error: "Maaf, berlaku kesalahan.", searchOn: "Mod Carian On", searchOff: "Mod Carian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" }
 };
 
-// DOM READY
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM ready, initializing Aethel...');
     init();
+    loadChatList();
+    loadChat(currentChatId);
 });
 
 function init() {
-    // GET ELEMENTS
-    const newChatBtn = document.getElementById('newChatBtn');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const settingsHeaderBtn = document.getElementById('settingsHeaderBtn');
-    const closeSettingsModal = document.getElementById('closeSettingsModal');
-    const closePreviewModal = document.getElementById('closePreviewModal');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sendBtn = document.getElementById('sendBtn');
-    const userInput = document.getElementById('userInput');
-    const attachBtn = document.getElementById('attachBtn');
-    const fileInput = document.getElementById('fileInput');
-    const searchModeBtn = document.getElementById('searchModeBtn');
-    const searchModeToggle = document.getElementById('searchModeToggle');
-    const languageSelect = document.getElementById('languageSelect');
-    const settingsModal = document.getElementById('settingsModal');
-    const previewModal = document.getElementById('previewModal');
+    const elements = {
+        newChatBtn: document.getElementById('newChatBtn'),
+        settingsBtn: document.getElementById('settingsBtn'),
+        settingsHeaderBtn: document.getElementById('settingsHeaderBtn'),
+        closeSettingsModal: document.getElementById('closeSettingsModal'),
+        closePreviewModal: document.getElementById('closePreviewModal'),
+        sidebarToggle: document.getElementById('sidebarToggle'),
+        sendBtn: document.getElementById('sendBtn'),
+        userInput: document.getElementById('userInput'),
+        attachBtn: document.getElementById('attachBtn'),
+        fileInput: document.getElementById('fileInput'),
+        searchModeBtn: document.getElementById('searchModeBtn'),
+        searchModeToggle: document.getElementById('searchModeToggle'),
+        languageSelect: document.getElementById('languageSelect'),
+        settingsModal: document.getElementById('settingsModal'),
+        previewModal: document.getElementById('previewModal'),
+        exportHistoryBtn: document.getElementById('exportHistoryBtn'),
+        clearAllHistoryBtn: document.getElementById('clearAllHistoryBtn')
+    };
     
-    console.log('Elements found:', {
-        newChatBtn: !!newChatBtn,
-        settingsBtn: !!settingsBtn,
-        sendBtn: !!sendBtn
-    });
-    
-    // NEW CHAT BUTTON
-    if (newChatBtn) {
-        newChatBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('🔄 New chat');
-            conversationHistory = [];
-            const messages = document.getElementById('messages');
-            if (messages) messages.innerHTML = '';
-            addSystemMessage('✨ Chat baru dimulai. Tanya apa saja!');
-        });
+    if (elements.newChatBtn) elements.newChatBtn.onclick = () => newChat();
+    if (elements.settingsBtn) elements.settingsBtn.onclick = () => elements.settingsModal.style.display = 'flex';
+    if (elements.settingsHeaderBtn) elements.settingsHeaderBtn.onclick = () => elements.settingsModal.style.display = 'flex';
+    if (elements.closeSettingsModal) elements.closeSettingsModal.onclick = () => elements.settingsModal.style.display = 'none';
+    if (elements.closePreviewModal) elements.closePreviewModal.onclick = () => elements.previewModal.style.display = 'none';
+    if (elements.sidebarToggle && document.getElementById('sidebar')) elements.sidebarToggle.onclick = () => document.getElementById('sidebar').classList.toggle('open');
+    if (elements.sendBtn) elements.sendBtn.onclick = () => sendMessage();
+    if (elements.userInput) elements.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    if (elements.attachBtn && elements.fileInput) {
+        elements.attachBtn.onclick = () => elements.fileInput.click();
+        elements.fileInput.onchange = (e) => handleFileSelect(e);
     }
-    
-    // SETTINGS BUTTONS
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (settingsModal) settingsModal.style.display = 'flex';
-        });
+    if (elements.searchModeBtn) elements.searchModeBtn.onclick = () => toggleSearchMode();
+    if (elements.searchModeToggle) {
+        elements.searchModeToggle.checked = searchMode;
+        elements.searchModeToggle.onchange = (e) => { searchMode = e.target.checked; localStorage.setItem('aethel_search_mode', searchMode); updateSearchModeUI(); addSystemMessage(searchMode ? 'Mode pencarian aktif' : 'Mode pencarian nonaktif'); };
     }
-    if (settingsHeaderBtn) {
-        settingsHeaderBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (settingsModal) settingsModal.style.display = 'flex';
-        });
+    if (elements.languageSelect) {
+        elements.languageSelect.value = currentLanguage;
+        elements.languageSelect.onchange = (e) => { currentLanguage = e.target.value; localStorage.setItem('aethel_language', currentLanguage); updateSearchModeUI(); updateTypingText(); };
     }
+    if (elements.exportHistoryBtn) elements.exportHistoryBtn.onclick = () => exportAllChats();
+    if (elements.clearAllHistoryBtn) elements.clearAllHistoryBtn.onclick = () => { if(confirm('Hapus SEMUA riwayat chat?')) clearAllHistory(); };
     
-    // CLOSE MODALS
-    if (closeSettingsModal) {
-        closeSettingsModal.addEventListener('click', function() {
-            if (settingsModal) settingsModal.style.display = 'none';
-        });
-    }
-    if (closePreviewModal) {
-        closePreviewModal.addEventListener('click', function() {
-            if (previewModal) previewModal.style.display = 'none';
-        });
-    }
+    window.onclick = (e) => {
+        if (elements.settingsModal && e.target === elements.settingsModal) elements.settingsModal.style.display = 'none';
+        if (elements.previewModal && e.target === elements.previewModal) elements.previewModal.style.display = 'none';
+    };
     
-    // CLICK OUTSIDE MODAL
-    window.addEventListener('click', function(e) {
-        if (settingsModal && e.target === settingsModal) {
-            settingsModal.style.display = 'none';
-        }
-        if (previewModal && e.target === previewModal) {
-            previewModal.style.display = 'none';
-        }
-    });
-    
-    // SIDEBAR TOGGLE
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            sidebar.classList.toggle('open');
-        });
-    }
-    
-    // SEND BUTTON
-    if (sendBtn) {
-        sendBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            sendMessage();
-        });
-    }
-    
-    // ENTER KEY
-    if (userInput) {
-        userInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-        userInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-        });
-    }
-    
-    // ATTACH FILE
-    if (attachBtn && fileInput) {
-        attachBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
-        });
-        fileInput.addEventListener('change', function(e) {
-            handleFileSelect(e);
-        });
-    }
-    
-    // SEARCH MODE BUTTON
-    if (searchModeBtn) {
-        searchModeBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleSearchMode();
-        });
-    }
-    
-    // SEARCH MODE TOGGLE (Settings)
-    if (searchModeToggle) {
-        searchModeToggle.checked = searchMode;
-        searchModeToggle.addEventListener('change', function(e) {
-            searchMode = e.target.checked;
-            localStorage.setItem('aethel_search_mode', searchMode);
-            updateSearchModeUI();
-            addSystemMessage(searchMode ? '🌐 Mode pencarian aktif' : '📘 Mode pencarian nonaktif');
-        });
-    }
-    
-    // LANGUAGE SELECT
-    if (languageSelect) {
-        languageSelect.value = currentLanguage;
-        languageSelect.addEventListener('change', function(e) {
-            currentLanguage = e.target.value;
-            localStorage.setItem('aethel_language', currentLanguage);
-            updateSearchModeUI();
-            updateTypingText();
-        });
-    }
-    
-    // LOAD HISTORY & UI
-    loadChatHistory();
     updateSearchModeUI();
     updateTypingText();
-    
-    console.log('✅ Aethel ready');
 }
 
 function updateTypingText() {
-    const typingText = document.getElementById('typingText');
     const t = translations[currentLanguage] || translations.id;
+    const typingText = document.getElementById('typingText');
     if (typingText) typingText.textContent = t.typing;
 }
 
 function toggleSearchMode() {
     searchMode = !searchMode;
     localStorage.setItem('aethel_search_mode', searchMode);
-    const searchModeToggle = document.getElementById('searchModeToggle');
-    if (searchModeToggle) searchModeToggle.checked = searchMode;
+    const toggle = document.getElementById('searchModeToggle');
+    if (toggle) toggle.checked = searchMode;
     updateSearchModeUI();
-    addSystemMessage(searchMode ? '🌐 Mode pencarian aktif' : '📘 Mode pencarian nonaktif');
+    addSystemMessage(searchMode ? 'Mode pencarian aktif' : 'Mode pencarian nonaktif');
 }
 
 function updateSearchModeUI() {
-    const searchModeText = document.getElementById('searchModeText');
-    const searchModeBtn = document.getElementById('searchModeBtn');
+    const textSpan = document.getElementById('searchModeText');
+    const btn = document.getElementById('searchModeBtn');
     const t = translations[currentLanguage] || translations.id;
-    if (searchModeText) {
-        searchModeText.textContent = searchMode ? t.searchOn : t.searchOff;
-    }
-    if (searchModeBtn) {
-        if (searchMode) {
-            searchModeBtn.classList.add('active');
-        } else {
-            searchModeBtn.classList.remove('active');
-        }
-    }
+    if (textSpan) textSpan.textContent = searchMode ? t.searchOn : t.searchOff;
+    if (btn) btn.classList.toggle('active', searchMode);
 }
 
 function addSystemMessage(text) {
-    const messageContainer = document.getElementById('messages');
-    if (!messageContainer) return;
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message assistant';
-    msgDiv.innerHTML = `
-        <div class="avatar"><i class="fas fa-info-circle"></i></div>
-        <div class="message-content" style="background: none; font-style: italic; font-size: 12px;">${escapeHtml(text)}</div>
-    `;
-    messageContainer.appendChild(msgDiv);
+    const container = document.getElementById('messages');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'message assistant';
+    div.innerHTML = `<div class="avatar"><i class="fas fa-info-circle"></i></div><div class="message-content" style="background:none;font-style:italic;font-size:12px;">${escapeHtml(text)}</div>`;
+    container.appendChild(div);
     scrollToBottom();
 }
 
 function handleFileSelect(e) {
     const files = Array.from(e.target.files);
-    const filePreview = document.getElementById('filePreview');
-    if (!filePreview) return;
-    filePreview.innerHTML = '';
+    const preview = document.getElementById('filePreview');
+    if (!preview) return;
+    preview.innerHTML = '';
     files.forEach(file => {
-        const previewItem = document.createElement('div');
-        previewItem.className = 'preview-item';
+        const item = document.createElement('div');
+        item.className = 'preview-item';
         if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
-            img.style.width = '24px';
-            img.style.height = '24px';
-            img.style.borderRadius = '4px';
-            previewItem.appendChild(img);
+            img.style.cssText = 'width:24px;height:24px;border-radius:4px';
+            item.appendChild(img);
         } else {
             const icon = document.createElement('i');
             icon.className = 'fas fa-file';
-            previewItem.appendChild(icon);
+            item.appendChild(icon);
         }
         const span = document.createElement('span');
-        span.textContent = file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name;
-        previewItem.appendChild(span);
-        const removeBtn = document.createElement('button');
-        removeBtn.innerHTML = '&times;';
-        removeBtn.style.background = 'none';
-        removeBtn.style.border = 'none';
-        removeBtn.style.cursor = 'pointer';
-        removeBtn.style.marginLeft = '4px';
-        removeBtn.onclick = () => previewItem.remove();
-        previewItem.appendChild(removeBtn);
-        filePreview.appendChild(previewItem);
+        span.textContent = file.name.length > 20 ? file.name.slice(0,17)+'...' : file.name;
+        item.appendChild(span);
+        const remove = document.createElement('button');
+        remove.innerHTML = '&times;';
+        remove.style.cssText = 'background:none;border:none;cursor:pointer;margin-left:4px';
+        remove.onclick = () => item.remove();
+        item.appendChild(remove);
+        preview.appendChild(item);
     });
 }
 
 function addMessage(content, role, files = []) {
-    const messageContainer = document.getElementById('messages');
-    if (!messageContainer) return;
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${role}`;
-    let htmlContent = '';
-    if (role === 'assistant') {
-        htmlContent = `<div class="avatar"><i class="fas fa-robot"></i></div>`;
-    }
-    htmlContent += `<div class="message-content">`;
-    if (files.length > 0) {
-        files.forEach(file => {
-            if (file.type?.startsWith('image/')) {
-                htmlContent += `<img src="${URL.createObjectURL(file)}" class="message-image">`;
-            } else {
-                htmlContent += `<div class="file-attachment"><i class="fas fa-paperclip"></i> ${escapeHtml(file.name)}</div>`;
-            }
+    const container = document.getElementById('messages');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    let html = '';
+    if (role === 'assistant') html = `<div class="avatar"><i class="fas fa-robot"></i></div>`;
+    html += `<div class="message-content">`;
+    if (files.length) {
+        files.forEach(f => {
+            if (f.type?.startsWith('image/')) html += `<img src="${URL.createObjectURL(f)}" class="message-image">`;
+            else html += `<div class="file-attachment"><i class="fas fa-paperclip"></i> ${escapeHtml(f.name)}</div>`;
         });
     }
-    let processedContent = escapeHtml(content);
-    const codeRegex = /```(\w*)\n([\s\S]*?)```/g;
-    processedContent = processedContent.replace(codeRegex, (match, lang, code) => {
+    let processed = escapeHtml(content);
+    processed = processed.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
         const isHtml = lang === 'html' || lang === 'HTML';
-        return `<div class="code-block"><code>${escapeHtml(code)}</code>${isHtml ? `<button class="preview-btn" onclick="previewHTML(\`${escapeHtml(code).replace(/`/g, '\\`')}\`)">🔍 Preview HTML</button>` : ''}</div>`;
+        return `<div class="code-block"><code>${escapeHtml(code)}</code>${isHtml ? `<button class="preview-btn" onclick="previewHTML(\`${escapeHtml(code).replace(/`/g, '\\`')}\`)">Preview HTML</button>` : ''}</div>`;
     });
-    htmlContent += processedContent;
-    htmlContent += `</div>`;
-    msgDiv.innerHTML = htmlContent;
-    messageContainer.appendChild(msgDiv);
+    html += processed + `</div>`;
+    div.innerHTML = html;
+    container.appendChild(div);
     scrollToBottom();
 }
 
-window.previewHTML = function(htmlContent) {
-    const previewModal = document.getElementById('previewModal');
-    const previewFrame = document.getElementById('previewFrame');
-    if (previewFrame) previewFrame.innerHTML = htmlContent;
-    if (previewModal) previewModal.style.display = 'flex';
+window.previewHTML = (html) => {
+    const frame = document.getElementById('previewFrame');
+    const modal = document.getElementById('previewModal');
+    if (frame) frame.innerHTML = html;
+    if (modal) modal.style.display = 'flex';
 };
 
 function escapeHtml(text) {
@@ -318,92 +197,126 @@ function scrollToBottom() {
 }
 
 async function sendMessage() {
-    const userInput = document.getElementById('userInput');
+    const input = document.getElementById('userInput');
     const fileInput = document.getElementById('fileInput');
-    const filePreview = document.getElementById('filePreview');
-    const typingIndicator = document.getElementById('typingIndicator');
-    
-    if (!userInput) return;
-    
-    const text = userInput.value.trim();
+    const preview = document.getElementById('filePreview');
+    const typing = document.getElementById('typingIndicator');
+    if (!input) return;
+    const text = input.value.trim();
     const files = fileInput ? Array.from(fileInput.files) : [];
+    if (!text && !files.length) return;
     
-    if (!text && files.length === 0) return;
-    
-    // SECRET COMMAND
     if (text.toLowerCase() === '/ardingruhofemb') {
         const t = translations[currentLanguage] || translations.id;
         addMessage(text, 'user');
         addMessage(t.secretResponse, 'assistant');
-        userInput.value = '';
+        input.value = '';
         if (fileInput) fileInput.value = '';
-        if (filePreview) filePreview.innerHTML = '';
+        if (preview) preview.innerHTML = '';
         return;
     }
     
     addMessage(text || 'Mengirim file...', 'user', files);
-    
-    userInput.value = '';
-    userInput.style.height = 'auto';
-    if (filePreview) filePreview.innerHTML = '';
+    input.value = '';
+    input.style.height = 'auto';
+    if (preview) preview.innerHTML = '';
     if (fileInput) fileInput.value = '';
     
-    // ✅ HANYA KIRIM TEXT KE API (tanpa files)
     conversationHistory.push({ role: 'user', content: text });
-    saveChatToHistory(text);
-    
-    if (typingIndicator) typingIndicator.style.display = 'flex';
+    saveCurrentChat();
+    if (typing) typing.style.display = 'flex';
     scrollToBottom();
     
     try {
-        const response = await fetch('/api/chat', {
+        const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                messages: conversationHistory.slice(-15).map(m => ({ role: m.role, content: m.content })),
-                language: currentLanguage,
-                searchMode: searchMode
-            })
+            body: JSON.stringify({ messages: conversationHistory.slice(-15).map(m => ({ role: m.role, content: m.content })), language: currentLanguage, searchMode: searchMode })
         });
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const data = await response.json();
+        const data = await res.json();
         addMessage(data.reply, 'assistant');
         conversationHistory.push({ role: 'assistant', content: data.reply });
-        
-    } catch (err) {
+        saveCurrentChat();
+    } catch(err) {
         const t = translations[currentLanguage] || translations.id;
         addMessage(t.error, 'assistant');
     } finally {
-        if (typingIndicator) typingIndicator.style.display = 'none';
+        if (typing) typing.style.display = 'none';
         scrollToBottom();
     }
 }
 
-function fileToBase64(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-    });
+function saveCurrentChat() {
+    const chats = JSON.parse(localStorage.getItem('aethel_all_chats') || '{}');
+    chats[currentChatId] = { id: currentChatId, title: conversationHistory[0]?.content?.slice(0,30) || 'Chat baru', messages: conversationHistory, updatedAt: Date.now() };
+    localStorage.setItem('aethel_all_chats', JSON.stringify(chats));
+    loadChatList();
 }
 
-function saveChatToHistory(firstMessage) {
-    let history = JSON.parse(localStorage.getItem('aethel_chats') || '[]');
-    history.unshift({ id: Date.now(), title: firstMessage.slice(0, 30) });
-    if (history.length > 15) history = history.slice(0, 15);
-    localStorage.setItem('aethel_chats', JSON.stringify(history));
-    loadChatHistory();
-}
-
-function loadChatHistory() {
-    const historyList = document.getElementById('historyList');
-    if (!historyList) return;
-    let history = JSON.parse(localStorage.getItem('aethel_chats') || '[]');
-    historyList.innerHTML = history.map(chat => `
-        <div class="history-item" onclick="location.reload()">
-            <i class="fas fa-comment"></i> ${escapeHtml(chat.title)}...
+function loadChatList() {
+    const listDiv = document.getElementById('historyList');
+    if (!listDiv) return;
+    const chats = JSON.parse(localStorage.getItem('aethel_all_chats') || '{}');
+    const sorted = Object.values(chats).sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+    listDiv.innerHTML = sorted.map(chat => `
+        <div class="history-item" data-id="${chat.id}">
+            <span class="history-title" onclick="loadChat('${chat.id}')">${escapeHtml(chat.title)}</span>
+            <button class="delete-history-btn" onclick="deleteChat('${chat.id}')"><i class="fas fa-times"></i></button>
         </div>
     `).join('');
+}
+
+function loadChat(chatId) {
+    const chats = JSON.parse(localStorage.getItem('aethel_all_chats') || '{}');
+    const chat = chats[chatId];
+    if (!chat) return;
+    currentChatId = chatId;
+    localStorage.setItem('aethel_current_chat', chatId);
+    conversationHistory = chat.messages || [];
+    const container = document.getElementById('messages');
+    if (container) {
+        container.innerHTML = '';
+        conversationHistory.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = `message ${msg.role}`;
+            div.innerHTML = msg.role === 'assistant' ? `<div class="avatar"><i class="fas fa-robot"></i></div><div class="message-content">${escapeHtml(msg.content)}</div>` : `<div class="message-content">${escapeHtml(msg.content)}</div>`;
+            container.appendChild(div);
+        });
+    }
+    scrollToBottom();
+}
+
+function deleteChat(chatId) {
+    const chats = JSON.parse(localStorage.getItem('aethel_all_chats') || '{}');
+    delete chats[chatId];
+    localStorage.setItem('aethel_all_chats', JSON.stringify(chats));
+    if (currentChatId === chatId) newChat();
+    loadChatList();
+}
+
+function clearAllHistory() {
+    localStorage.removeItem('aethel_all_chats');
+    newChat();
+    loadChatList();
+}
+
+function exportAllChats() {
+    const chats = localStorage.getItem('aethel_all_chats');
+    const dataStr = JSON.stringify(JSON.parse(chats || '{}'), null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aethel_chats_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function newChat() {
+    currentChatId = 'chat_' + Date.now();
+    localStorage.setItem('aethel_current_chat', currentChatId);
+    conversationHistory = [];
+    const container = document.getElementById('messages');
+    if (container) container.innerHTML = '';
+    addSystemMessage('Chat baru dimulai!');
 }
