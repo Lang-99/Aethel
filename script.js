@@ -1,4 +1,11 @@
-// Aethel v3.0 - Full Featured AI Tutor
+// Aethel v4.0 - Full AI Assistant
+
+// State
+let searchMode = localStorage.getItem('aethel_search_mode') === 'true';
+let currentTheme = localStorage.getItem('aethel_theme') || 'dark';
+let currentLanguage = localStorage.getItem('aethel_language') || 'id';
+let conversationHistory = [];
+let currentUser = null;
 
 // DOM Elements
 const messageContainer = document.getElementById('messages');
@@ -7,55 +14,36 @@ const sendBtn = document.getElementById('sendBtn');
 const typingIndicator = document.getElementById('typing');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
-const termsModal = document.getElementById('termsModal');
-const closeModal = document.querySelector('.close-modal');
-const closeTerms = document.querySelector('.close-terms');
+const searchModeBtn = document.getElementById('searchModeBtn');
+const searchIndicator = document.getElementById('searchIndicator');
 const searchModeToggle = document.getElementById('searchModeToggle');
 const languageSelect = document.getElementById('languageSelect');
-const termsBtn = document.getElementById('termsBtn');
+const attachBtn = document.getElementById('attachBtn');
+const fileInput = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+const previewModal = document.getElementById('previewModal');
+const previewFrame = document.getElementById('previewFrame');
 
-// State
-let conversationHistory = [];
-let searchMode = localStorage.getItem('aethel_search_mode') === 'true';
-let currentLanguage = localStorage.getItem('aethel_language') || 'id';
-let currentTheme = localStorage.getItem('aethel_theme') || 'dark';
-
-// Translations (20 languages)
+// Translations
 const translations = {
-    id: { greeting: "✦ Halo! Aku Aethel, AI tutor canggihmu. Ada yang ingin kamu pelajari tentang coding hari ini?", creator: "Saya dibuat oleh Langitjp", typing: "Aethel sedang mengetik..." },
-    en: { greeting: "✦ Hi! I'm Aethel, your advanced AI tutor. What would you like to learn about coding today?", creator: "I was created by Langitjp", typing: "Aethel is typing..." },
-    ar: { greeting: "✦ مرحبًا! أنا إيثيل، معلمك الذكي. ماذا تريد أن تتعلم عن البرمجة اليوم؟", creator: "لقد تم إنشائي بواسطة لانجيت جي بي", typing: "إيثيل يكتب..." },
-    zh: { greeting: "✦ 你好！我是Aethel，你的智能AI导师。今天想学习什么编程知识？", creator: "我由Langitjp创建", typing: "Aethel正在输入..." },
-    es: { greeting: "✦ ¡Hola! Soy Aethel, tu tutor avanzado de IA. ¿Qué quieres aprender sobre programación hoy?", creator: "Fui creado por Langitjp", typing: "Aethel está escribiendo..." },
-    fr: { greeting: "✦ Bonjour ! Je suis Aethel, ton tuteur IA avancé. Qu'aimerais-tu apprendre en programmation aujourd'hui ?", creator: "J'ai été créé par Langitjp", typing: "Aethel écrit..." },
-    hi: { greeting: "✦ नमस्ते! मैं एथेल हूं, आपका उन्नत AI ट्यूटर। आज कोडिंग के बारे में क्या सीखना चाहेंगे?", creator: "मुझे लैंगिटजेपी ने बनाया है", typing: "एथेल टाइप कर रहा है..." },
-    pt: { greeting: "✦ Olá! Sou Aethel, seu tutor de IA avançado. O que você gostaria de aprender sobre programação hoje?", creator: "Fui criado por Langitjp", typing: "Aethel está digitando..." },
-    ru: { greeting: "✦ Привет! Я Этель, твой продвинутый AI-репетитор. Что ты хочешь узнать о программировании сегодня?", creator: "Я был создан Langitjp", typing: "Этель печатает..." },
-    ja: { greeting: "✦ こんにちは！私はAethel、あなたの先進的なAIチューターです。今日はコーディングについて何を学びたいですか？", creator: "私はLangitjpによって作成されました", typing: "Aethelが入力中..." },
-    ko: { greeting: "✦ 안녕하세요! 저는 Aethel, 당신의 고급 AI 튜터입니다. 오늘 코딩에 대해 무엇을 배우고 싶으신가요?", creator: "저는 Langitjp에 의해 만들어졌습니다", typing: "Aethel이 입력 중..." },
-    de: { greeting: "✦ Hallo! Ich bin Aethel, dein fortschrittlicher AI-Tutor. Was möchtest du heute über das Programmieren lernen?", creator: "Ich wurde von Langitjp erstellt", typing: "Aethel tippt..." },
-    it: { greeting: "✦ Ciao! Sono Aethel, il tuo tutor AI avanzato. Cosa vorresti imparare sulla programmazione oggi?", creator: "Sono stato creato da Langitjp", typing: "Aethel sta scrivendo..." },
-    tr: { greeting: "✦ Merhaba! Ben Aethel, gelişmiş yapay zeka öğretmenin. Bugün kodlama hakkında ne öğrenmek istersin?", creator: "Langitjp tarafından yaratıldım", typing: "Aethel yazıyor..." },
-    vi: { greeting: "✦ Xin chào! Tôi là Aethel, gia sư AI nâng cao của bạn. Hôm nay bạn muốn học gì về lập trình?", creator: "Tôi được tạo bởi Langitjp", typing: "Aethel đang gõ..." },
-    th: { greeting: "✦ สวัสดี! ฉันคือ Aethel ผู้สอน AI ขั้นสูงของคุณ วันนี้คุณอยากเรียนรู้อะไรเกี่ยวกับการเขียนโค้ดบ้าง?", creator: "ฉันถูกสร้างโดย Langitjp", typing: "Aethel กำลังพิมพ์..." },
-    pl: { greeting: "✦ Cześć! Jestem Aethel, twój zaawansowany nauczyciel AI. Czego chciałbyś się dzisiaj nauczyć o kodowaniu?", creator: "Zostałem stworzony przez Langitjp", typing: "Aethel pisze..." },
-    nl: { greeting: "✦ Hallo! Ik ben Aethel, jouw geavanceerde AI-tutor. Wat wil je vandaag leren over coderen?", creator: "Ik ben gemaakt door Langitjp", typing: "Aethel typt..." },
-    sv: { greeting: "✦ Hej! Jag är Aethel, din avancerade AI-handledare. Vad vill du lära dig om kodning idag?", creator: "Jag skapades av Langitjp", typing: "Aethel skriver..." },
-    no: { greeting: "✦ Hei! Jeg er Aethel, din avanserte AI-veileder. Hva vil du lære om koding i dag?", creator: "Jeg ble laget av Langitjp", typing: "Aethel skriver..." }
+    id: { typing: "Aethel sedang mengetik...", error: "Maaf, terjadi kesalahan. Coba lagi." },
+    en: { typing: "Aethel is typing...", error: "Sorry, something went wrong. Try again." },
+    es: { typing: "Aethel está escribiendo...", error: "Lo siento, algo salió mal. Inténtalo de nuevo." },
+    fr: { typing: "Aethel écrit...", error: "Désolé, une erreur s'est produite. Réessayez." },
+    ar: { typing: "إيثيل يكتب...", error: "عذرًا، حدث خطأ. حاول مرة أخرى." },
+    zh: { typing: "Aethel正在输入...", error: "抱歉，出错了。请重试。" },
+    hi: { typing: "एथेल टाइप कर रहा है...", error: "क्षमा करें, कुछ गलत हो गया। फिर से कोशिश करें।" }
 };
 
 // Initialize
 function init() {
-    // Load saved settings
-    searchModeToggle.checked = searchMode;
-    languageSelect.value = currentLanguage;
-    
-    // Apply theme
+    // Apply settings
     applyTheme(currentTheme);
+    updateSearchModeUI();
     
-    // Update greeting with current language
-    const greeting = translations[currentLanguage]?.greeting || translations.id.greeting;
-    document.querySelector('.message.assistant .content').innerHTML = greeting;
+    // Set language select
+    if (languageSelect) languageSelect.value = currentLanguage;
+    if (searchModeToggle) searchModeToggle.checked = searchMode;
     
     // Event listeners
     sendBtn.addEventListener('click', sendMessage);
@@ -65,21 +53,27 @@ function init() {
             sendMessage();
         }
     });
+    
     settingsBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
-    closeModal.addEventListener('click', () => settingsModal.style.display = 'none');
-    closeTerms.addEventListener('click', () => termsModal.style.display = 'none');
-    termsBtn.addEventListener('click', () => termsModal.style.display = 'flex');
+    document.querySelector('.close-modal')?.addEventListener('click', () => settingsModal.style.display = 'none');
+    document.querySelector('.close-preview')?.addEventListener('click', () => previewModal.style.display = 'none');
     
-    searchModeToggle.addEventListener('change', (e) => {
-        searchMode = e.target.checked;
-        localStorage.setItem('aethel_search_mode', searchMode);
-    });
+    searchModeBtn.addEventListener('click', toggleSearchMode);
+    if (searchModeToggle) {
+        searchModeToggle.addEventListener('change', (e) => {
+            searchMode = e.target.checked;
+            localStorage.setItem('aethel_search_mode', searchMode);
+            updateSearchModeUI();
+        });
+    }
     
-    languageSelect.addEventListener('change', (e) => {
-        currentLanguage = e.target.value;
-        localStorage.setItem('aethel_language', currentLanguage);
-        updateLanguage();
-    });
+    if (languageSelect) {
+        languageSelect.addEventListener('change', (e) => {
+            currentLanguage = e.target.value;
+            localStorage.setItem('aethel_language', currentLanguage);
+            typingIndicator.textContent = translations[currentLanguage]?.typing || translations.id.typing;
+        });
+    }
     
     // Theme buttons
     document.querySelectorAll('.theme-btn').forEach(btn => {
@@ -92,16 +86,20 @@ function init() {
         });
     });
     
-    // Close modal when clicking outside
-    window.addEventListener('click', (e) => {
-        if (e.target === settingsModal) settingsModal.style.display = 'none';
-        if (e.target === termsModal) termsModal.style.display = 'none';
-    });
+    // File attachment
+    attachBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
     
     // Auto resize textarea
     userInput.addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+    
+    // Close modal on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.style.display = 'none';
+        if (e.target === previewModal) previewModal.style.display = 'none';
     });
 }
 
@@ -116,25 +114,95 @@ function applyTheme(theme) {
     }
 }
 
-function updateLanguage() {
-    const greeting = translations[currentLanguage]?.greeting || translations.id.greeting;
-    const firstMsg = document.querySelector('.message.assistant .content');
-    if (firstMsg && firstMsg.innerHTML.includes('Halo') || firstMsg.innerHTML.includes('Hi')) {
-        firstMsg.innerHTML = greeting;
-    }
-    typingIndicator.textContent = translations[currentLanguage]?.typing || translations.id.typing;
+function toggleSearchMode() {
+    searchMode = !searchMode;
+    localStorage.setItem('aethel_search_mode', searchMode);
+    if (searchModeToggle) searchModeToggle.checked = searchMode;
+    updateSearchModeUI();
+    addSystemMessage(searchMode ? '🌐 Mode pencarian aktif' : '📘 Mode pencarian nonaktif');
 }
 
-function addMessage(content, role) {
+function updateSearchModeUI() {
+    if (searchIndicator) {
+        searchIndicator.textContent = searchMode ? 'On' : 'Off';
+        searchIndicator.className = `search-indicator ${searchMode ? 'on' : 'off'}`;
+    }
+}
+
+function addSystemMessage(text) {
     const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${role}`;
-    msgDiv.innerHTML = `
-        <div class="avatar">${role === 'user' ? 'U' : 'A'}</div>
-        <div class="content">${escapeHtml(content)}</div>
-    `;
+    msgDiv.className = 'message assistant';
+    msgDiv.innerHTML = `<div class="message-content" style="background: none; font-style: italic; font-size: 12px;">${escapeHtml(text)}</div>`;
     messageContainer.appendChild(msgDiv);
     scrollToBottom();
 }
+
+function handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    filePreview.innerHTML = '';
+    files.forEach(file => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            previewItem.appendChild(img);
+        }
+        
+        const span = document.createElement('span');
+        span.textContent = file.name;
+        previewItem.appendChild(span);
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '×';
+        removeBtn.style.background = 'none';
+        removeBtn.style.border = 'none';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.onclick = () => previewItem.remove();
+        previewItem.appendChild(removeBtn);
+        
+        filePreview.appendChild(previewItem);
+    });
+}
+
+function addMessage(content, role, files = []) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${role}`;
+    
+    let htmlContent = `<div class="message-content">`;
+    
+    // Add files/images
+    if (files.length > 0) {
+        files.forEach(file => {
+            if (file.type?.startsWith('image/')) {
+                htmlContent += `<img src="${URL.createObjectURL(file)}" class="message-image">`;
+            } else {
+                htmlContent += `<div class="file-attachment">📎 ${escapeHtml(file.name)}</div>`;
+            }
+        });
+    }
+    
+    // Process content for code blocks with preview
+    let processedContent = escapeHtml(content);
+    const codeRegex = /```(\w*)\n([\s\S]*?)```/g;
+    processedContent = processedContent.replace(codeRegex, (match, lang, code) => {
+        const isHtml = lang === 'html' || lang === 'HTML';
+        return `<div class="code-block"><pre><code>${escapeHtml(code)}</code></pre>${isHtml ? `<button class="preview-btn" onclick="previewHTML(\`${escapeHtml(code).replace(/`/g, '\\`')}\`)">🔍 Preview HTML</button>` : ''}</div>`;
+    });
+    
+    htmlContent += processedContent;
+    htmlContent += `</div>`;
+    
+    msgDiv.innerHTML = htmlContent;
+    messageContainer.appendChild(msgDiv);
+    scrollToBottom();
+}
+
+window.previewHTML = function(htmlContent) {
+    previewFrame.innerHTML = htmlContent;
+    previewModal.style.display = 'flex';
+};
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -149,23 +217,37 @@ function scrollToBottom() {
 
 async function sendMessage() {
     const text = userInput.value.trim();
-    if (!text) return;
+    const files = fileInput.files ? Array.from(fileInput.files) : [];
     
-    // Check if asking about creator
-    const lowerText = text.toLowerCase();
-    if (lowerText.includes('siapa pembuat') || lowerText.includes('creator') || lowerText.includes('dibuat oleh') || lowerText.includes('buat siapa') || lowerText.includes('who made you')) {
-        const creatorReply = translations[currentLanguage]?.creator || "Saya dibuat oleh Langitjp";
-        addMessage(creatorReply, 'assistant');
-        userInput.value = '';
-        userInput.style.height = 'auto';
-        return;
-    }
+    if (!text && files.length === 0) return;
     
-    addMessage(text, 'user');
+    // Add user message
+    addMessage(text || '📎 Mengirim file', 'user', files);
+    
+    // Clear input
     userInput.value = '';
     userInput.style.height = 'auto';
+    filePreview.innerHTML = '';
+    fileInput.value = '';
     
-    conversationHistory.push({ role: 'user', content: text });
+    // Prepare files data
+    let filesData = [];
+    for (const file of files) {
+        const base64 = await fileToBase64(file);
+        filesData.push({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: base64
+        });
+    }
+    
+    conversationHistory.push({ 
+        role: 'user', 
+        content: text,
+        files: filesData 
+    });
+    
     typingIndicator.style.display = 'block';
     scrollToBottom();
     
@@ -173,7 +255,7 @@ async function sendMessage() {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 messages: conversationHistory,
                 language: currentLanguage,
                 searchMode: searchMode
@@ -189,12 +271,28 @@ async function sendMessage() {
         
         if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-30);
     } catch (err) {
-        addMessage(`❌ Gagal: ${err.message}. Coba lagi nanti.`, 'assistant');
+        const errorMsg = translations[currentLanguage]?.error || translations.id.error;
+        addMessage(errorMsg, 'assistant');
     } finally {
         typingIndicator.style.display = 'none';
         scrollToBottom();
     }
 }
 
-// Start the app
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// Google Sign In callback
+window.handleGoogleSignIn = function(response) {
+    currentUser = response;
+    addSystemMessage(`✅ Login sebagai ${response.email || 'user'} via Google`);
+};
+
+// Start
 init();
