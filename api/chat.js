@@ -11,22 +11,18 @@ export default async function handler(req, res) {
     const { messages, language, searchMode } = req.body;
     
     const languageNames = {
-        id: 'Bahasa Indonesia', en: 'English', ar: 'العربية', zh: '中文', es: 'Español',
-        fr: 'Français', hi: 'हिन्दी', pt: 'Português', ru: 'Русский', ja: '日本語',
-        ko: '한국어', de: 'Deutsch', it: 'Italiano', tr: 'Türkçe', vi: 'Tiếng Việt',
-        th: 'ไทย', pl: 'Polski', nl: 'Nederlands', sv: 'Svenska', no: 'Norsk'
+        id: 'Bahasa Indonesia', en: 'English', es: 'Español', fr: 'Français',
+        ar: 'العربية', zh: '中文', hi: 'हिन्दी', pt: 'Português',
+        ru: 'Русский', ja: '日本語', ko: '한국어'
     };
     
-    const systemPrompt = `Kamu adalah Aethel, AI tutor coding canggih. Fitur:
-- Berbicara dalam bahasa: ${languageNames[language] || 'Bahasa Indonesia'}
-- Mode pencarian: ${searchMode ? 'AKTIF (bisa akses info real-time)' : 'NONAKTIF (hanya berdasarkan pengetahuan)'}
-- Gaya bicara ramah, informatif, tidak bertele-tele
-- Berikan contoh kode jika diminta
-- Bantu belajar: HTML, CSS, JS, React, Python, Java, PHP, dll
-- Jika mode pencarian aktif, beri informasi terupdate
-    
-Pembuatmu adalah Langitjp.
-Jika ditanya siapa pembuatmu, jawab dengan bangga: "Saya dibuat oleh Langitjp" dalam bahasa yang sesuai.`;
+    const systemPrompt = `Kamu adalah Aethel, asisten AI canggih yang bisa membantu apa saja (bukan hanya coding). Mode pencarian: ${searchMode ? 'AKTIF - bisa akses informasi real-time' : 'NONAKTIF - hanya berdasarkan pengetahuan'}.
+Gunakan bahasa: ${languageNames[language] || 'Bahasa Indonesia'}
+Gaya bicara: ramah, informatif, tidak bertele-tele.
+Pembuatmu: Langitjp.
+Jika ada kode HTML, sertakan dalam format \`\`\`html ... \`\`\` agar bisa di-preview.
+Jika kode dalam bahasa lain seperti Python dengan print("halo"), ubah menjadi print("hello world") (Inggris).
+Jika user mengirim gambar atau file, analisis dan berikan respons sesuai.`;
     
     try {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -39,10 +35,15 @@ Jika ditanya siapa pembuatmu, jawab dengan bangga: "Saya dibuat oleh Langitjp" d
                 model: 'llama-3.3-70b-versatile',
                 messages: [
                     { role: 'system', content: systemPrompt },
-                    ...(messages || [])
+                    ...(messages || []).map(m => ({
+                        role: m.role,
+                        content: m.files?.length > 0 
+                            ? `${m.content}\n\n[User mengirim ${m.files.length} file: ${m.files.map(f => f.name).join(', ')}]` 
+                            : m.content
+                    }))
                 ],
-                temperature: 0.6,
-                max_tokens: 1000,
+                temperature: 0.7,
+                max_tokens: 1500,
             }),
         });
         
