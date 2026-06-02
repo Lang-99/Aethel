@@ -1,32 +1,186 @@
-// Aethel v2.0 - 20 bahasa + Secret Command
+// Aethel v2.0 - Semua Tombol Berfungsi
+
+console.log('🚀 Aethel script loaded');
 
 let searchMode = localStorage.getItem('aethel_search_mode') === 'true';
 let currentLanguage = localStorage.getItem('aethel_language') || 'id';
 let conversationHistory = [];
 
-// DOM Elements
-const messageContainer = document.getElementById('messages');
-const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-const typingIndicator = document.getElementById('typingIndicator');
-const typingText = document.getElementById('typingText');
-const settingsModal = document.getElementById('settingsModal');
-const previewModal = document.getElementById('previewModal');
-const previewFrame = document.getElementById('previewFrame');
-const searchModeBtn = document.getElementById('searchModeBtn');
-const searchModeText = document.getElementById('searchModeText');
-const searchModeToggle = document.getElementById('searchModeToggle');
-const languageSelect = document.getElementById('languageSelect');
-const attachBtn = document.getElementById('attachBtn');
-const fileInput = document.getElementById('fileInput');
-const filePreview = document.getElementById('filePreview');
-const newChatBtn = document.getElementById('newChatBtn');
-const settingsBtn = document.getElementById('settingsBtn');
-const settingsHeaderBtn = document.getElementById('settingsHeaderBtn');
-const sidebarToggle = document.getElementById('sidebarToggle');
-const sidebar = document.getElementById('sidebar');
+// Cek DOM sudah siap
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM ready, initializing...');
+    init();
+});
 
-// 20 Languages Translation
+function init() {
+    // Ambil semua element dengan aman
+    const newChatBtn = document.getElementById('newChatBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsHeaderBtn = document.getElementById('settingsHeaderBtn');
+    const closeSettingsModal = document.getElementById('closeSettingsModal');
+    const closePreviewModal = document.getElementById('closePreviewModal');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sendBtn = document.getElementById('sendBtn');
+    const userInput = document.getElementById('userInput');
+    const attachBtn = document.getElementById('attachBtn');
+    const fileInput = document.getElementById('fileInput');
+    const searchModeBtn = document.getElementById('searchModeBtn');
+    const searchModeToggle = document.getElementById('searchModeToggle');
+    const languageSelect = document.getElementById('languageSelect');
+    const settingsModal = document.getElementById('settingsModal');
+    const previewModal = document.getElementById('previewModal');
+    const messages = document.getElementById('messages');
+    
+    console.log('Elements found:', {
+        newChatBtn: !!newChatBtn,
+        settingsBtn: !!settingsBtn,
+        sendBtn: !!sendBtn,
+        attachBtn: !!attachBtn
+    });
+    
+    // NEW CHAT BUTTON
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔄 New chat clicked');
+            conversationHistory = [];
+            if (messages) messages.innerHTML = '';
+            addSystemMessage('✨ Chat baru dimulai. Tanya apa saja!');
+        });
+    }
+    
+    // SETTINGS BUTTONS (Sidebar & Header)
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('⚙️ Settings clicked');
+            if (settingsModal) settingsModal.style.display = 'flex';
+        });
+    }
+    
+    if (settingsHeaderBtn) {
+        settingsHeaderBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('⚙️ Settings header clicked');
+            if (settingsModal) settingsModal.style.display = 'flex';
+        });
+    }
+    
+    // CLOSE MODAL
+    if (closeSettingsModal) {
+        closeSettingsModal.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (settingsModal) settingsModal.style.display = 'none';
+        });
+    }
+    
+    if (closePreviewModal) {
+        closePreviewModal.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (previewModal) previewModal.style.display = 'none';
+        });
+    }
+    
+    // CLICK OUTSIDE MODAL
+    window.addEventListener('click', function(e) {
+        if (settingsModal && e.target === settingsModal) {
+            settingsModal.style.display = 'none';
+        }
+        if (previewModal && e.target === previewModal) {
+            previewModal.style.display = 'none';
+        }
+    });
+    
+    // SIDEBAR TOGGLE (Mobile)
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.toggle('open');
+            console.log('Sidebar toggled');
+        });
+    }
+    
+    // SEND BUTTON
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('📤 Send button clicked');
+            sendMessage();
+        });
+    }
+    
+    // ENTER KEY
+    if (userInput) {
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                console.log('⏎ Enter pressed');
+                sendMessage();
+            }
+        });
+        
+        // Auto resize
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+    }
+    
+    // ATTACH BUTTON
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('📎 Attach clicked');
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function(e) {
+            console.log('📁 Files selected:', e.target.files.length);
+            handleFileSelect(e);
+        });
+    }
+    
+    // SEARCH MODE BUTTON (Footer)
+    if (searchModeBtn) {
+        searchModeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔍 Search mode toggled');
+            toggleSearchMode();
+        });
+    }
+    
+    // SEARCH MODE TOGGLE (Settings)
+    if (searchModeToggle) {
+        searchModeToggle.checked = searchMode;
+        searchModeToggle.addEventListener('change', function(e) {
+            searchMode = e.target.checked;
+            localStorage.setItem('aethel_search_mode', searchMode);
+            updateSearchModeUI();
+            addSystemMessage(searchMode ? '🌐 Mode pencarian aktif' : '📘 Mode pencarian nonaktif');
+        });
+    }
+    
+    // LANGUAGE SELECT
+    if (languageSelect) {
+        languageSelect.value = currentLanguage;
+        languageSelect.addEventListener('change', function(e) {
+            currentLanguage = e.target.value;
+            localStorage.setItem('aethel_language', currentLanguage);
+            updateSearchModeUI();
+            updateTypingText();
+        });
+    }
+    
+    // Load history & update UI
+    loadChatHistory();
+    updateSearchModeUI();
+    updateTypingText();
+    
+    console.log('✅ Aethel initialized successfully');
+}
+
+// TRANSLATIONS 20 BAHASA
 const translations = {
     id: { typing: "Aethel mengetik...", error: "Maaf, terjadi kesalahan.", searchOn: "Mode Pencarian On", searchOff: "Mode Pencarian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
     en: { typing: "Aethel is typing...", error: "Sorry, something went wrong.", searchOn: "Search Mode On", searchOff: "Search Mode Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
@@ -50,75 +204,8 @@ const translations = {
     ms: { typing: "Aethel sedang menaip...", error: "Maaf, berlaku kesalahan.", searchOn: "Mod Carian On", searchOff: "Mod Carian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" }
 };
 
-function init() {
-    updateSearchModeUI();
-    
-    if (searchModeToggle) searchModeToggle.checked = searchMode;
-    if (languageSelect) languageSelect.value = currentLanguage;
-    
-    // Event Listeners
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', () => settingsModal.style.display = 'none');
-    });
-    document.querySelector('.close-preview')?.addEventListener('click', () => previewModal.style.display = 'none');
-    
-    searchModeBtn.addEventListener('click', toggleSearchMode);
-    if (searchModeToggle) {
-        searchModeToggle.addEventListener('change', (e) => {
-            searchMode = e.target.checked;
-            localStorage.setItem('aethel_search_mode', searchMode);
-            updateSearchModeUI();
-        });
-    }
-    
-    if (languageSelect) {
-        languageSelect.addEventListener('change', (e) => {
-            currentLanguage = e.target.value;
-            localStorage.setItem('aethel_language', currentLanguage);
-            updateSearchModeUI();
-            updateTypingText();
-        });
-    }
-    
-    attachBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileSelect);
-    newChatBtn.addEventListener('click', newChat);
-    
-    if (settingsBtn) settingsBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
-    if (settingsHeaderBtn) settingsHeaderBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
-    
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
-    }
-    
-    userInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-    });
-    
-    loadChatHistory();
-    
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-            if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                sidebar.classList.remove('open');
-            }
-        }
-    });
-}
-
 function updateTypingText() {
+    const typingText = document.getElementById('typingText');
     const t = translations[currentLanguage] || translations.id;
     if (typingText) typingText.textContent = t.typing;
 }
@@ -126,13 +213,17 @@ function updateTypingText() {
 function toggleSearchMode() {
     searchMode = !searchMode;
     localStorage.setItem('aethel_search_mode', searchMode);
+    const searchModeToggle = document.getElementById('searchModeToggle');
     if (searchModeToggle) searchModeToggle.checked = searchMode;
     updateSearchModeUI();
     addSystemMessage(searchMode ? '🌐 Mode pencarian aktif' : '📘 Mode pencarian nonaktif');
 }
 
 function updateSearchModeUI() {
+    const searchModeText = document.getElementById('searchModeText');
+    const searchModeBtn = document.getElementById('searchModeBtn');
     const t = translations[currentLanguage] || translations.id;
+    
     if (searchModeText) {
         searchModeText.textContent = searchMode ? t.searchOn : t.searchOff;
     }
@@ -146,6 +237,9 @@ function updateSearchModeUI() {
 }
 
 function addSystemMessage(text) {
+    const messageContainer = document.getElementById('messages');
+    if (!messageContainer) return;
+    
     const msgDiv = document.createElement('div');
     msgDiv.className = 'message assistant';
     msgDiv.innerHTML = `
@@ -158,6 +252,9 @@ function addSystemMessage(text) {
 
 function handleFileSelect(e) {
     const files = Array.from(e.target.files);
+    const filePreview = document.getElementById('filePreview');
+    if (!filePreview) return;
+    
     filePreview.innerHTML = '';
     files.forEach(file => {
         const previewItem = document.createElement('div');
@@ -194,6 +291,9 @@ function handleFileSelect(e) {
 }
 
 function addMessage(content, role, files = []) {
+    const messageContainer = document.getElementById('messages');
+    if (!messageContainer) return;
+    
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${role}`;
     
@@ -231,8 +331,10 @@ function addMessage(content, role, files = []) {
 }
 
 window.previewHTML = function(htmlContent) {
-    previewFrame.innerHTML = htmlContent;
-    previewModal.style.display = 'flex';
+    const previewModal = document.getElementById('previewModal');
+    const previewFrame = document.getElementById('previewFrame');
+    if (previewFrame) previewFrame.innerHTML = htmlContent;
+    if (previewModal) previewModal.style.display = 'flex';
 };
 
 function escapeHtml(text) {
@@ -242,25 +344,32 @@ function escapeHtml(text) {
 }
 
 function scrollToBottom() {
-    const container = document.querySelector('.messages-container');
-    container.scrollTop = container.scrollHeight;
+    const container = document.getElementById('messagesContainer');
+    if (container) container.scrollTop = container.scrollHeight;
 }
 
 async function sendMessage() {
+    const userInput = document.getElementById('userInput');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const messages = document.getElementById('messages');
+    
+    if (!userInput) return;
+    
     const text = userInput.value.trim();
-    const files = fileInput.files ? Array.from(fileInput.files) : [];
+    const files = fileInput ? Array.from(fileInput.files) : [];
     
     if (!text && files.length === 0) return;
     
-    // CHECK SECRET COMMAND
+    // SECRET COMMAND
     if (text.toLowerCase() === '/ardingruhofemb') {
         const t = translations[currentLanguage] || translations.id;
         addMessage(text, 'user');
         addMessage(t.secretResponse, 'assistant');
         userInput.value = '';
-        userInput.style.height = 'auto';
-        filePreview.innerHTML = '';
-        fileInput.value = '';
+        if (fileInput) fileInput.value = '';
+        if (filePreview) filePreview.innerHTML = '';
         return;
     }
     
@@ -268,8 +377,8 @@ async function sendMessage() {
     
     userInput.value = '';
     userInput.style.height = 'auto';
-    filePreview.innerHTML = '';
-    fileInput.value = '';
+    if (filePreview) filePreview.innerHTML = '';
+    if (fileInput) fileInput.value = '';
     
     let filesData = [];
     for (const file of files) {
@@ -280,7 +389,7 @@ async function sendMessage() {
     conversationHistory.push({ role: 'user', content: text, files: filesData });
     saveChatToHistory(text);
     
-    typingIndicator.style.display = 'flex';
+    if (typingIndicator) typingIndicator.style.display = 'flex';
     scrollToBottom();
     
     try {
@@ -304,7 +413,7 @@ async function sendMessage() {
         const t = translations[currentLanguage] || translations.id;
         addMessage(t.error, 'assistant');
     } finally {
-        typingIndicator.style.display = 'none';
+        if (typingIndicator) typingIndicator.style.display = 'none';
         scrollToBottom();
     }
 }
@@ -315,12 +424,6 @@ function fileToBase64(file) {
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
     });
-}
-
-function newChat() {
-    conversationHistory = [];
-    messageContainer.innerHTML = '';
-    addSystemMessage('✨ Chat baru dimulai. Tanya apa saja!');
 }
 
 function saveChatToHistory(firstMessage) {
@@ -341,5 +444,3 @@ function loadChatHistory() {
         </div>
     `).join('');
 }
-
-init();
