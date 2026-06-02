@@ -10,138 +10,24 @@
 </head>
 <body>
     <div class="app">
-        <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <button class="new-chat-btn" id="newChatBtn">
-                    <i class="fas fa-plus"></i>
-                    <span>Chat Baru</span>
-                </button>
+                <button class="new-chat-btn" id="newChatBtn"><i class="fas fa-plus"></i><span>Chat Baru</span></button>
             </div>
             <div class="chat-history">
-                <div class="history-header">Riwayat Chat</div>
+                <div class="history-header"><span>Riwayat Chat</span><div class="history-actions"><button id="exportHistoryBtn" class="history-action-btn" title="Export"><i class="fas fa-download"></i></button><button id="clearAllHistoryBtn" class="history-action-btn" title="Hapus Semua"><i class="fas fa-trash-alt"></i></button></div></div>
                 <div id="historyList"></div>
             </div>
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Guest</span>
-                </div>
-                <button class="settings-btn" id="settingsBtn">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
+            <div class="sidebar-footer"><div class="user-info"><i class="fas fa-user-circle"></i><span>Guest</span></div><button class="settings-btn" id="settingsBtn"><i class="fas fa-cog"></i></button></div>
         </aside>
-
-        <!-- MAIN CHAT -->
         <main class="main-chat">
-            <header class="chat-header">
-                <button class="sidebar-toggle" id="sidebarToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo">
-                    <span class="icon">✦</span>
-                    <h1>Aethel</h1>
-                </div>
-                <button class="settings-header-btn" id="settingsHeaderBtn">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </header>
-
-            <div class="messages-container" id="messagesContainer">
-                <div class="messages" id="messages"></div>
-                <div class="typing-indicator" id="typingIndicator">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span id="typingText">Aethel mengetik...</span>
-                </div>
-            </div>
-
-            <div class="input-container">
-                <div class="input-wrapper">
-                    <button class="attach-btn" id="attachBtn">
-                        <i class="fas fa-paperclip"></i>
-                    </button>
-                    <textarea id="userInput" placeholder="Ketik pesan..." rows="1"></textarea>
-                    <button class="send-btn" id="sendBtn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-                <div class="input-footer">
-                    <button class="search-mode-btn" id="searchModeBtn">
-                        <i class="fas fa-globe"></i>
-                        <span id="searchModeText">Mode Pencarian Off</span>
-                    </button>
-                    <div class="file-preview" id="filePreview"></div>
-                </div>
-            </div>
+            <header class="chat-header"><button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button><div class="logo"><span class="icon">✦</span><h1>Aethel</h1></div><button class="settings-header-btn" id="settingsHeaderBtn"><i class="fas fa-cog"></i></button></header>
+            <div class="messages-container" id="messagesContainer"><div class="messages" id="messages"></div><div class="typing-indicator" id="typingIndicator"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span id="typingText">Aethel mengetik...</span></div></div>
+            <div class="input-container"><div class="input-wrapper"><button class="attach-btn" id="attachBtn"><i class="fas fa-paperclip"></i></button><textarea id="userInput" placeholder="Ketik pesan..." rows="1"></textarea><button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button></div><div class="input-footer"><button class="search-mode-btn" id="searchModeBtn"><i class="fas fa-globe"></i><span id="searchModeText">Mode Pencarian Off</span></button><div class="file-preview" id="filePreview"></div></div></div>
         </main>
     </div>
-
-    <!-- MODAL SETTINGS -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-cog"></i> Pengaturan</h3>
-                <button class="close-modal" id="closeSettingsModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="setting-group">
-                    <label><i class="fas fa-globe"></i> Mode Pencarian</label>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="searchModeToggle">
-                        <span class="slider"></span>
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <label><i class="fas fa-language"></i> Bahasa</label>
-                    <select id="languageSelect">
-                        <option value="id">🇮🇩 Indonesia</option>
-                        <option value="en">🇬🇧 English</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="ar">🇸🇦 العربية</option>
-                        <option value="zh">🇨🇳 中文</option>
-                        <option value="hi">🇮🇳 हिन्दी</option>
-                        <option value="pt">🇵🇹 Português</option>
-                        <option value="ru">🇷🇺 Русский</option>
-                        <option value="ja">🇯🇵 日本語</option>
-                        <option value="ko">🇰🇷 한국어</option>
-                        <option value="de">🇩🇪 Deutsch</option>
-                        <option value="it">🇮🇹 Italiano</option>
-                        <option value="tr">🇹🇷 Türkçe</option>
-                        <option value="vi">🇻🇳 Tiếng Việt</option>
-                        <option value="th">🇹🇭 ไทย</option>
-                        <option value="pl">🇵🇱 Polski</option>
-                        <option value="nl">🇳🇱 Nederlands</option>
-                        <option value="sv">🇸🇪 Svenska</option>
-                        <option value="ms">🇲🇾 Melayu</option>
-                    </select>
-                </div>
-                <div class="setting-group">
-                    <div class="creator-info">
-                        <p>✨ Aethel v2.0</p>
-                        <p>Dibuat oleh <strong>Langitjp</strong></p>
-                        <p class="secret-hint">💀 Secret command: <code>/ardingruhofemb</code></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PREVIEW MODAL -->
-    <div id="previewModal" class="modal preview-modal">
-        <div class="modal-content preview-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-code"></i> Preview HTML</h3>
-                <button class="close-preview" id="closePreviewModal">&times;</button>
-            </div>
-            <div class="preview-frame" id="previewFrame"></div>
-        </div>
-    </div>
-
-    <!-- SCRIPT JS PASTI TERPANGGIL -->
+    <div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-cog"></i> Pengaturan</h3><button class="close-modal" id="closeSettingsModal">&times;</button></div><div class="modal-body"><div class="setting-group"><label><i class="fas fa-globe"></i> Mode Pencarian</label><div class="toggle-switch"><input type="checkbox" id="searchModeToggle"><span class="slider"></span></div></div><div class="setting-group"><label><i class="fas fa-language"></i> Bahasa</label><select id="languageSelect"><option value="id">🇮🇩 Indonesia</option><option value="en">🇬🇧 English</option><option value="es">🇪🇸 Español</option><option value="fr">🇫🇷 Français</option><option value="ar">🇸🇦 العربية</option><option value="zh">🇨🇳 中文</option><option value="hi">🇮🇳 हिन्दी</option><option value="pt">🇵🇹 Português</option><option value="ru">🇷🇺 Русский</option><option value="ja">🇯🇵 日本語</option><option value="ko">🇰🇷 한국어</option><option value="de">🇩🇪 Deutsch</option><option value="it">🇮🇹 Italiano</option><option value="tr">🇹🇷 Türkçe</option><option value="vi">🇻🇳 Tiếng Việt</option><option value="th">🇹🇭 ไทย</option><option value="pl">🇵🇱 Polski</option><option value="nl">🇳🇱 Nederlands</option><option value="sv">🇸🇪 Svenska</option><option value="ms">🇲🇾 Melayu</option></select></div><div class="setting-group"><div class="creator-info"><p>✨ Aethel v3.0</p><p>Dibuat oleh <strong>Langitjp</strong></p></div></div></div></div></div>
+    <div id="previewModal" class="modal preview-modal"><div class="modal-content preview-content"><div class="modal-header"><h3><i class="fas fa-code"></i> Preview HTML</h3><button class="close-preview" id="closePreviewModal">&times;</button></div><div class="preview-frame" id="previewFrame"></div></div></div>
     <script src="script.js"></script>
 </body>
 </html>
