@@ -1,4 +1,4 @@
-// Aethel v2.0 - Semua Tombol Berfungsi
+// Aethel v2.0 - Full Working dengan Secret Command
 
 console.log('🚀 Aethel script loaded');
 
@@ -6,14 +6,38 @@ let searchMode = localStorage.getItem('aethel_search_mode') === 'true';
 let currentLanguage = localStorage.getItem('aethel_language') || 'id';
 let conversationHistory = [];
 
-// Cek DOM sudah siap
+// 20 LANGUAGES TRANSLATIONS
+const translations = {
+    id: { typing: "Aethel mengetik...", error: "Maaf, terjadi kesalahan.", searchOn: "Mode Pencarian On", searchOff: "Mode Pencarian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    en: { typing: "Aethel is typing...", error: "Sorry, something went wrong.", searchOn: "Search Mode On", searchOff: "Search Mode Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    es: { typing: "Aethel está escribiendo...", error: "Lo siento, algo salió mal.", searchOn: "Modo Búsqueda On", searchOff: "Modo Búsqueda Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    fr: { typing: "Aethel écrit...", error: "Désolé, une erreur s'est produite.", searchOn: "Mode Recherche On", searchOff: "Mode Recherche Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    ar: { typing: "إيثيل يكتب...", error: "عذرًا، حدث خطأ.", searchOn: "وضع البحث مفعل", searchOff: "وضع البحث معطل", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    zh: { typing: "Aethel正在输入...", error: "抱歉，出错了。", searchOn: "搜索模式开启", searchOff: "搜索模式关闭", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    hi: { typing: "एथेल टाइप कर रहा है...", error: "क्षमा करें, कुछ गलत हो गया।", searchOn: "खोज मोड चालू", searchOff: "खोज मोड बंद", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    pt: { typing: "Aethel está digitando...", error: "Desculpe, algo deu errado.", searchOn: "Modo Pesquisa On", searchOff: "Modo Pesquisa Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    ru: { typing: "Этель печатает...", error: "Извините, что-то пошло не так.", searchOn: "Режим поиска Вкл", searchOff: "Режим поиска Выкл", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    ja: { typing: "Aethelが入力中...", error: "申し訳ありません、エラーが発生しました。", searchOn: "検索モードオン", searchOff: "検索モードオフ", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    ko: { typing: "Aethel 입력 중...", error: "죄송합니다. 오류가 발생했습니다.", searchOn: "검색 모드 켜짐", searchOff: "검색 모드 꺼짐", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    de: { typing: "Aethel tippt...", error: "Entschuldigung, etwas ist schief gelaufen.", searchOn: "Suchmodus Ein", searchOff: "Suchmodus Aus", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    it: { typing: "Aethel sta scrivendo...", error: "Spiacenti, qualcosa è andato storto.", searchOn: "Modalità Ricerca On", searchOff: "Modalità Ricerca Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    tr: { typing: "Aethel yazıyor...", error: "Üzgünüm, bir şeyler yanlış gitti.", searchOn: "Arama Modu Açık", searchOff: "Arama Modu Kapalı", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    vi: { typing: "Aethel đang gõ...", error: "Xin lỗi, đã xảy ra lỗi.", searchOn: "Chế độ Tìm kiếm Bật", searchOff: "Chế độ Tìm kiếm Tắt", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    th: { typing: "Aethel กำลังพิมพ์...", error: "ขออภัย เกิดข้อผิดพลาด", searchOn: "โหมดค้นหาเปิด", searchOff: "โหมดค้นหาปิด", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    pl: { typing: "Aethel pisze...", error: "Przepraszam, coś poszło nie tak.", searchOn: "Tryb wyszukiwania Wł.", searchOff: "Tryb wyszukiwania Wył.", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    nl: { typing: "Aethel typt...", error: "Sorry, er is iets misgegaan.", searchOn: "Zoekmodus Aan", searchOff: "Zoekmodus Uit", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    sv: { typing: "Aethel skriver...", error: "Tyvärr, något gick fel.", searchOn: "Sökläge På", searchOff: "Sökläge Av", secretResponse: "ardifemboysxxxxxxxxxxx92" },
+    ms: { typing: "Aethel sedang menaip...", error: "Maaf, berlaku kesalahan.", searchOn: "Mod Carian On", searchOff: "Mod Carian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" }
+};
+
+// DOM READY
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM ready, initializing...');
+    console.log('📄 DOM ready, initializing Aethel...');
     init();
 });
 
 function init() {
-    // Ambil semua element dengan aman
+    // GET ELEMENTS
     const newChatBtn = document.getElementById('newChatBtn');
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsHeaderBtn = document.getElementById('settingsHeaderBtn');
@@ -30,54 +54,47 @@ function init() {
     const languageSelect = document.getElementById('languageSelect');
     const settingsModal = document.getElementById('settingsModal');
     const previewModal = document.getElementById('previewModal');
-    const messages = document.getElementById('messages');
     
     console.log('Elements found:', {
         newChatBtn: !!newChatBtn,
         settingsBtn: !!settingsBtn,
-        sendBtn: !!sendBtn,
-        attachBtn: !!attachBtn
+        sendBtn: !!sendBtn
     });
     
     // NEW CHAT BUTTON
     if (newChatBtn) {
         newChatBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('🔄 New chat clicked');
+            console.log('🔄 New chat');
             conversationHistory = [];
+            const messages = document.getElementById('messages');
             if (messages) messages.innerHTML = '';
             addSystemMessage('✨ Chat baru dimulai. Tanya apa saja!');
         });
     }
     
-    // SETTINGS BUTTONS (Sidebar & Header)
+    // SETTINGS BUTTONS
     if (settingsBtn) {
         settingsBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('⚙️ Settings clicked');
             if (settingsModal) settingsModal.style.display = 'flex';
         });
     }
-    
     if (settingsHeaderBtn) {
         settingsHeaderBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('⚙️ Settings header clicked');
             if (settingsModal) settingsModal.style.display = 'flex';
         });
     }
     
-    // CLOSE MODAL
+    // CLOSE MODALS
     if (closeSettingsModal) {
-        closeSettingsModal.addEventListener('click', function(e) {
-            e.preventDefault();
+        closeSettingsModal.addEventListener('click', function() {
             if (settingsModal) settingsModal.style.display = 'none';
         });
     }
-    
     if (closePreviewModal) {
-        closePreviewModal.addEventListener('click', function(e) {
-            e.preventDefault();
+        closePreviewModal.addEventListener('click', function() {
             if (previewModal) previewModal.style.display = 'none';
         });
     }
@@ -92,12 +109,11 @@ function init() {
         }
     });
     
-    // SIDEBAR TOGGLE (Mobile)
+    // SIDEBAR TOGGLE
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', function(e) {
             e.preventDefault();
             sidebar.classList.toggle('open');
-            console.log('Sidebar toggled');
         });
     }
     
@@ -105,7 +121,6 @@ function init() {
     if (sendBtn) {
         sendBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('📤 Send button clicked');
             sendMessage();
         });
     }
@@ -115,37 +130,30 @@ function init() {
         userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                console.log('⏎ Enter pressed');
                 sendMessage();
             }
         });
-        
-        // Auto resize
         userInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
     }
     
-    // ATTACH BUTTON
+    // ATTACH FILE
     if (attachBtn && fileInput) {
         attachBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('📎 Attach clicked');
             fileInput.click();
         });
-        
         fileInput.addEventListener('change', function(e) {
-            console.log('📁 Files selected:', e.target.files.length);
             handleFileSelect(e);
         });
     }
     
-    // SEARCH MODE BUTTON (Footer)
+    // SEARCH MODE BUTTON
     if (searchModeBtn) {
         searchModeBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('🔍 Search mode toggled');
             toggleSearchMode();
         });
     }
@@ -172,37 +180,13 @@ function init() {
         });
     }
     
-    // Load history & update UI
+    // LOAD HISTORY & UI
     loadChatHistory();
     updateSearchModeUI();
     updateTypingText();
     
-    console.log('✅ Aethel initialized successfully');
+    console.log('✅ Aethel ready');
 }
-
-// TRANSLATIONS 20 BAHASA
-const translations = {
-    id: { typing: "Aethel mengetik...", error: "Maaf, terjadi kesalahan.", searchOn: "Mode Pencarian On", searchOff: "Mode Pencarian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    en: { typing: "Aethel is typing...", error: "Sorry, something went wrong.", searchOn: "Search Mode On", searchOff: "Search Mode Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    es: { typing: "Aethel está escribiendo...", error: "Lo siento, algo salió mal.", searchOn: "Modo Búsqueda On", searchOff: "Modo Búsqueda Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    fr: { typing: "Aethel écrit...", error: "Désolé, une erreur s'est produite.", searchOn: "Mode Recherche On", searchOff: "Mode Recherche Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    ar: { typing: "إيثيل يكتب...", error: "عذرًا، حدث خطأ.", searchOn: "وضع البحث مفعل", searchOff: "وضع البحث معطل", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    zh: { typing: "Aethel正在输入...", error: "抱歉，出错了。", searchOn: "搜索模式开启", searchOff: "搜索模式关闭", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    hi: { typing: "एथेल टाइप कर रहा है...", error: "क्षमा करें, कुछ गलत हो गया।", searchOn: "खोज मोड चालू", searchOff: "खोज मोड बंद", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    pt: { typing: "Aethel está digitando...", error: "Desculpe, algo deu errado.", searchOn: "Modo Pesquisa On", searchOff: "Modo Pesquisa Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    ru: { typing: "Этель печатает...", error: "Извините, что-то пошло не так.", searchOn: "Режим поиска Вкл", searchOff: "Режим поиска Выкл", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    ja: { typing: "Aethelが入力中...", error: "申し訳ありません、エラーが発生しました。", searchOn: "検索モードオン", searchOff: "検索モードオフ", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    ko: { typing: "Aethel 입력 중...", error: "죄송합니다. 오류가 발생했습니다.", searchOn: "검색 모드 켜짐", searchOff: "검색 모드 꺼짐", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    de: { typing: "Aethel tippt...", error: "Entschuldigung, etwas ist schief gelaufen.", searchOn: "Suchmodus Ein", searchOff: "Suchmodus Aus", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    it: { typing: "Aethel sta scrivendo...", error: "Spiacenti, qualcosa è andato storto.", searchOn: "Modalità Ricerca On", searchOff: "Modalità Ricerca Off", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    tr: { typing: "Aethel yazıyor...", error: "Üzgünüm, bir şeyler yanlış gitti.", searchOn: "Arama Modu Açık", searchOff: "Arama Modu Kapalı", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    vi: { typing: "Aethel đang gõ...", error: "Xin lỗi, đã xảy ra lỗi.", searchOn: "Chế độ Tìm kiếm Bật", searchOff: "Chế độ Tìm kiếm Tắt", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    th: { typing: "Aethel กำลังพิมพ์...", error: "ขออภัย เกิดข้อผิดพลาด", searchOn: "โหมดค้นหาเปิด", searchOff: "โหมดค้นหาปิด", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    pl: { typing: "Aethel pisze...", error: "Przepraszam, coś poszło nie tak.", searchOn: "Tryb wyszukiwania Wł.", searchOff: "Tryb wyszukiwania Wył.", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    nl: { typing: "Aethel typt...", error: "Sorry, er is iets misgegaan.", searchOn: "Zoekmodus Aan", searchOff: "Zoekmodus Uit", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    sv: { typing: "Aethel skriver...", error: "Tyvärr, något gick fel.", searchOn: "Sökläge På", searchOff: "Sökläge Av", secretResponse: "ardifemboysxxxxxxxxxxx92" },
-    ms: { typing: "Aethel sedang menaip...", error: "Maaf, berlaku kesalahan.", searchOn: "Mod Carian On", searchOff: "Mod Carian Off", secretResponse: "ardifemboysxxxxxxxxxxx92" }
-};
 
 function updateTypingText() {
     const typingText = document.getElementById('typingText');
@@ -223,7 +207,6 @@ function updateSearchModeUI() {
     const searchModeText = document.getElementById('searchModeText');
     const searchModeBtn = document.getElementById('searchModeBtn');
     const t = translations[currentLanguage] || translations.id;
-    
     if (searchModeText) {
         searchModeText.textContent = searchMode ? t.searchOn : t.searchOff;
     }
@@ -239,7 +222,6 @@ function updateSearchModeUI() {
 function addSystemMessage(text) {
     const messageContainer = document.getElementById('messages');
     if (!messageContainer) return;
-    
     const msgDiv = document.createElement('div');
     msgDiv.className = 'message assistant';
     msgDiv.innerHTML = `
@@ -254,12 +236,10 @@ function handleFileSelect(e) {
     const files = Array.from(e.target.files);
     const filePreview = document.getElementById('filePreview');
     if (!filePreview) return;
-    
     filePreview.innerHTML = '';
     files.forEach(file => {
         const previewItem = document.createElement('div');
         previewItem.className = 'preview-item';
-        
         if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
@@ -272,11 +252,9 @@ function handleFileSelect(e) {
             icon.className = 'fas fa-file';
             previewItem.appendChild(icon);
         }
-        
         const span = document.createElement('span');
         span.textContent = file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name;
         previewItem.appendChild(span);
-        
         const removeBtn = document.createElement('button');
         removeBtn.innerHTML = '&times;';
         removeBtn.style.background = 'none';
@@ -285,7 +263,6 @@ function handleFileSelect(e) {
         removeBtn.style.marginLeft = '4px';
         removeBtn.onclick = () => previewItem.remove();
         previewItem.appendChild(removeBtn);
-        
         filePreview.appendChild(previewItem);
     });
 }
@@ -293,18 +270,13 @@ function handleFileSelect(e) {
 function addMessage(content, role, files = []) {
     const messageContainer = document.getElementById('messages');
     if (!messageContainer) return;
-    
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${role}`;
-    
     let htmlContent = '';
-    
     if (role === 'assistant') {
         htmlContent = `<div class="avatar"><i class="fas fa-robot"></i></div>`;
     }
-    
     htmlContent += `<div class="message-content">`;
-    
     if (files.length > 0) {
         files.forEach(file => {
             if (file.type?.startsWith('image/')) {
@@ -314,17 +286,14 @@ function addMessage(content, role, files = []) {
             }
         });
     }
-    
     let processedContent = escapeHtml(content);
     const codeRegex = /```(\w*)\n([\s\S]*?)```/g;
     processedContent = processedContent.replace(codeRegex, (match, lang, code) => {
         const isHtml = lang === 'html' || lang === 'HTML';
         return `<div class="code-block"><code>${escapeHtml(code)}</code>${isHtml ? `<button class="preview-btn" onclick="previewHTML(\`${escapeHtml(code).replace(/`/g, '\\`')}\`)">🔍 Preview HTML</button>` : ''}</div>`;
     });
-    
     htmlContent += processedContent;
     htmlContent += `</div>`;
-    
     msgDiv.innerHTML = htmlContent;
     messageContainer.appendChild(msgDiv);
     scrollToBottom();
@@ -353,7 +322,6 @@ async function sendMessage() {
     const fileInput = document.getElementById('fileInput');
     const filePreview = document.getElementById('filePreview');
     const typingIndicator = document.getElementById('typingIndicator');
-    const messages = document.getElementById('messages');
     
     if (!userInput) return;
     
@@ -380,13 +348,8 @@ async function sendMessage() {
     if (filePreview) filePreview.innerHTML = '';
     if (fileInput) fileInput.value = '';
     
-    let filesData = [];
-    for (const file of files) {
-        const base64 = await fileToBase64(file);
-        filesData.push({ name: file.name, type: file.type, data: base64 });
-    }
-    
-    conversationHistory.push({ role: 'user', content: text, files: filesData });
+    // ✅ HANYA KIRIM TEXT KE API (tanpa files)
+    conversationHistory.push({ role: 'user', content: text });
     saveChatToHistory(text);
     
     if (typingIndicator) typingIndicator.style.display = 'flex';
@@ -397,7 +360,7 @@ async function sendMessage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                messages: conversationHistory.slice(-15),
+                messages: conversationHistory.slice(-15).map(m => ({ role: m.role, content: m.content })),
                 language: currentLanguage,
                 searchMode: searchMode
             })
