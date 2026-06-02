@@ -10,7 +10,6 @@
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <button class="new-chat-btn" id="newChatBtn">
@@ -33,7 +32,6 @@
             </div>
         </aside>
 
-        <!-- Main Chat -->
         <main class="main-chat">
             <header class="chat-header">
                 <button class="sidebar-toggle" id="sidebarToggle">
@@ -48,18 +46,16 @@
                 </button>
             </header>
 
-            <!-- Messages -->
             <div class="messages-container" id="messagesContainer">
                 <div class="messages" id="messages"></div>
                 <div class="typing-indicator" id="typingIndicator">
                     <span class="dot"></span>
                     <span class="dot"></span>
                     <span class="dot"></span>
-                    <span>Aethel mengetik...</span>
+                    <span id="typingText">Aethel mengetik...</span>
                 </div>
             </div>
 
-            <!-- Input Area -->
             <div class="input-container">
                 <div class="input-wrapper">
                     <button class="attach-btn" id="attachBtn">
@@ -81,43 +77,60 @@
         </main>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Pengaturan</h3>
+                <h3><i class="fas fa-cog"></i> Pengaturan</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="setting-group">
-                    <label>Mode Pencarian</label>
+                    <label><i class="fas fa-globe"></i> Mode Pencarian</label>
                     <div class="toggle-switch">
                         <input type="checkbox" id="searchModeToggle">
                         <span class="slider"></span>
                     </div>
                 </div>
                 <div class="setting-group">
-                    <label>Bahasa</label>
+                    <label><i class="fas fa-language"></i> Bahasa</label>
                     <select id="languageSelect">
-                        <option value="id">Indonesia</option>
-                        <option value="en">English</option>
+                        <option value="id">🇮🇩 Indonesia</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="ar">🇸🇦 العربية</option>
+                        <option value="zh">🇨🇳 中文</option>
+                        <option value="hi">🇮🇳 हिन्दी</option>
+                        <option value="pt">🇵🇹 Português</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="ko">🇰🇷 한국어</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                        <option value="tr">🇹🇷 Türkçe</option>
+                        <option value="vi">🇻🇳 Tiếng Việt</option>
+                        <option value="th">🇹🇭 ไทย</option>
+                        <option value="pl">🇵🇱 Polski</option>
+                        <option value="nl">🇳🇱 Nederlands</option>
+                        <option value="sv">🇸🇪 Svenska</option>
+                        <option value="ms">🇲🇾 Melayu</option>
                     </select>
                 </div>
                 <div class="setting-group">
                     <div class="creator-info">
-                        <p>Aethel v1.0</p>
+                        <p>✨ Aethel v2.0</p>
                         <p>Dibuat oleh <strong>Langitjp</strong></p>
+                        <p class="secret-hint">💀 Secret command: <code>/ardingruhofemb</code></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Preview Modal -->
     <div id="previewModal" class="modal preview-modal">
         <div class="modal-content preview-content">
             <div class="modal-header">
-                <h3>Preview HTML</h3>
+                <h3><i class="fas fa-code"></i> Preview HTML</h3>
                 <button class="close-preview">&times;</button>
             </div>
             <div class="preview-frame" id="previewFrame"></div>
